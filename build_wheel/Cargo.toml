@@ -1,0 +1,12 @@
+[package]
+name = "feos_pets"
+version = "0.1.0"
+authors = ["Rolf Stierle <stierle@itt.uni-stuttgart.de>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+feos-pets = { path = "..", features = ["python"] }
+pyo3 = { version = "0.15", features = ["extension-module", "abi3", "abi3-py37"] }
