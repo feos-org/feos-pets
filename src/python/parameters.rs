@@ -1,9 +1,11 @@
-use crate::parameters::{PetsParameters, PetsRecord};
+use crate::parameters::{PetsBinaryRecord, PetsParameters, PetsRecord};
 use feos_core::joback::JobackRecord;
-use feos_core::parameter::{IdentifierOption, Parameter, ParameterError, PureRecord};
+use feos_core::parameter::{Identifier, IdentifierOption, Parameter, ParameterError, PureRecord};
 use feos_core::python::joback::PyJobackRecord;
 use feos_core::python::parameter::PyIdentifier;
 use feos_core::*;
+use ndarray::Array2;
+
 use numpy::{PyArray2, ToPyArray};
 use pyo3::prelude::*;
 use std::convert::TryFrom;
@@ -98,6 +100,119 @@ impl_parameter!(PetsParameters, PyPetsParameters);
 
 #[pymethods]
 impl PyPetsParameters {
+    // Create a set of PeTS parameters from lists.
+    ///
+    /// Parameters
+    /// ----------
+    /// sigma : List[float]
+    ///     PeTS segment diameter in units of Angstrom.
+    /// epsilon_k : List[float]
+    ///     PeTS energy parameter in units of Kelvin.
+    /// k_ij: numpy.ndarray[float]
+    ///     matrix of binary interaction parameters.
+    /// molarweight: List[float], optional
+    ///     molar weight in units of Gram per Mol.
+    /// viscosity: List[List[float]], optional
+    ///     entropy scaling parameters for viscosity.
+    /// diffusion: List[List[float]], optional
+    ///     entropy scaling parameters for self-diffusion.
+    /// thermal_conductivity: List[List[float]], optional
+    ///     entropy scaling parameters for thermal conductivity.
+    /// Returns
+    /// -------
+    /// PetsParameters
+    #[pyo3(
+        text_signature = "(sigma, epsilon_k, k_ij=None, molarweight=None, viscosity=None, diffusion=None, thermal_conductivity=None)"
+    )]
+    #[staticmethod]
+    fn from_lists(
+        sigma: Vec<f64>,
+        epsilon_k: Vec<f64>,
+        k_ij: Option<&PyArray2<f64>>,
+        molarweight: Option<Vec<f64>>,
+        viscosity: Option<Vec<[f64; 4]>>,
+        diffusion: Option<Vec<[f64; 5]>>,
+        thermal_conductivity: Option<Vec<[f64; 4]>>,
+    ) -> Self {
+        let n = sigma.len();
+        let pure_records = (0..n)
+            .map(|i| {
+                let identifier =
+                    Identifier::new(format!("{}", i).as_str(), None, None, None, None, None);
+                let model_record = PetsRecord::new(
+                    sigma[i],
+                    epsilon_k[i],
+                    viscosity.as_ref().map_or(None, |v| Some(v[i])),
+                    diffusion.as_ref().map_or(None, |v| Some(v[i])),
+                    thermal_conductivity.as_ref().map_or(None, |v| Some(v[i])),
+                );
+                PureRecord::new(
+                    identifier,
+                    molarweight.as_ref().map_or(1.0, |v| v[i]),
+                    model_record,
+                    None,
+                )
+                // Hier Ideal Gas anstatt None???
+            })
+            .collect();
+
+        let binary = match k_ij {
+            Some(v) => v.to_owned_array().mapv(f64::into),
+            None => Array2::from_shape_fn((n, n), |(_, _)| PetsBinaryRecord::from(0.0)),
+        };
+
+        Self(Rc::new(PetsParameters::from_records(pure_records, binary)))
+    }
+
+    // Create a set of PeTS parameters from values.
+    ///
+    /// Parameters
+    /// ----------
+    /// sigma : float
+    ///     PeTS segment diameter in units of Angstrom.
+    /// epsilon_k : float
+    ///     PeTS energy parameter in units of Kelvin.
+    /// molarweight: float, optional
+    ///     molar weight in units of Gram per Mol.
+    /// viscosity: List[float], optional
+    ///     entropy scaling parameters for viscosity.
+    /// diffusion: List[float], optional
+    ///     entropy scaling parameters for self-diffusion.
+    /// thermal_conductivity: List[float], optional
+    ///     entropy scaling parameters for thermal conductivity.
+    /// Returns
+    /// -------
+    /// PetsParameters
+    #[pyo3(
+        text_signature = "(sigma, epsilon_k, molarweight=None, viscosity=None, diffusion=None, thermal_conductivity=None)"
+    )]
+    #[staticmethod]
+    fn from_lists_pure(
+        sigma: f64,
+        epsilon_k: f64,
+        molarweight: Option<f64>,
+        viscosity: Option<[f64; 4]>,
+        diffusion: Option<[f64; 5]>,
+        thermal_conductivity: Option<[f64; 4]>,
+    ) -> Self {
+        let pure_records = vec![PureRecord::new(
+            Identifier::new(format!("{}", 1).as_str(), None, None, None, None, None),
+            molarweight.map_or(1.0, |v| v),
+            PetsRecord::new(
+                sigma,
+                epsilon_k,
+                viscosity.map_or(None, |v| Some(v)),
+                diffusion.map_or(None, |v| Some(v)),
+                thermal_conductivity.map_or(None, |v| Some(v)),
+            ),
+            None,
+        )];
+
+        let binary = Array2::from_shape_fn((1, 1), |(_, _)| PetsBinaryRecord::from(0.0));
+
+        Self(Rc::new(PetsParameters::from_records(pure_records, binary)))
+    }
+
     #[getter]
     fn get_pure_records(&self) -> Vec<PyPureRecord> {
         self.0

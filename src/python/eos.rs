@@ -2,7 +2,7 @@ use super::parameters::PyPetsParameters;
 use crate::eos::{Pets, PetsOptions};
 use feos_core::python::{PyContributions, PyVerbosity};
 use feos_core::utils::{
-    DataSet, EquilibriumLiquidDensity, Estimator, LiquidDensity, VaporPressure, Loss
+    DataSet, EquilibriumLiquidDensity, Estimator, LiquidDensity, VaporPressure,
 };
 use feos_core::*;
 use numpy::convert::ToPyArray;
