@@ -7,6 +7,7 @@ use feos_core::*;
 use ndarray::Array2;
 
 use numpy::{PyArray2, ToPyArray};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use std::convert::TryFrom;
 use std::rc::Rc;
@@ -133,8 +134,32 @@ impl PyPetsParameters {
         viscosity: Option<Vec<[f64; 4]>>,
         diffusion: Option<Vec<[f64; 5]>>,
         thermal_conductivity: Option<Vec<[f64; 4]>>,
-    ) -> Self {
+    ) -> PyResult<Self> {
+        // Check if all inputs have the same length
         let n = sigma.len();
+        let input_length = vec![
+            Some(sigma.len()),
+            Some(epsilon_k.len()),
+            k_ij.as_ref().map_or(None, |v| Some(v.shape()[0])),
+            k_ij.as_ref().map_or(None, |v| Some(v.shape()[1])),
+            molarweight.as_ref().map_or(None, |v| Some(v.len())),
+            viscosity.as_ref().map_or(None, |v| Some(v.len())),
+            diffusion.as_ref().map_or(None, |v| Some(v.len())),
+            thermal_conductivity
+                .as_ref()
+                .map_or(None, |v| Some(v.len())),
+        ]
+        .iter()
+        .filter_map(|&v| v)
+        .all(|v| v == n);
+
+        if !input_length {
+            return Err(PyValueError::new_err(
+                "shape of arguments could not be used together.",
+            ));
+        }
+
+        // Define `PureRecord`s
         let pure_records = (0..n)
             .map(|i| {
                 let identifier =
@@ -161,7 +186,10 @@ impl PyPetsParameters {
             None => Array2::from_shape_fn((n, n), |(_, _)| PetsBinaryRecord::from(0.0)),
         };
 
-        Self(Rc::new(PetsParameters::from_records(pure_records, binary)))
+        Ok(Self(Rc::new(PetsParameters::from_records(
+            pure_records,
+            binary,
+        ))))
     }
 
     // Create a set of PeTS parameters from values.
