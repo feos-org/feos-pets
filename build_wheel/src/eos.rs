@@ -1,10 +1,6 @@
-use super::parameters::PyPetsParameters;
-use crate::eos::{Pets, PetsOptions};
-use feos_core::python::{PyContributions, PyVerbosity};
-use feos_core::utils::{
-    DataSet, EquilibriumLiquidDensity, Estimator, LiquidDensity, VaporPressure,
-};
 use feos_core::*;
+use feos_pets::{Pets, PetsOptions};
+use feos_pets::python::PyPetsParameters;
 use numpy::convert::ToPyArray;
 use numpy::{PyArray1, PyArray2};
 use pyo3::exceptions::PyValueError;
@@ -50,20 +46,14 @@ impl_state!(Pets, PyPets);
 impl_state_molarweight!(Pets, PyPets);
 impl_state_entropy_scaling!(Pets, PyPets);
 impl_vle_state!(Pets, PyPets);
-impl_estimator!(Pets, PyPets);
 
 #[pymodule]
-pub fn eos(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+pub fn _eos(py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPets>()?;
     m.add_class::<PyState>()?;
     m.add_class::<PyPhaseDiagramPure>()?;
     m.add_class::<PyPhaseDiagramBinary>()?;
     m.add_class::<PyPhaseDiagramHetero>()?;
     m.add_class::<PyPhaseEquilibrium>()?;
-
-    let utils = PyModule::new(py, "utils")?;
-    utils.add_class::<PyDataSet>()?;
-    utils.add_class::<PyEstimator>()?;
-    m.add_submodule(utils)?;
     Ok(())
 }

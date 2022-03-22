@@ -1,11 +1,10 @@
-use crate::parameters::{PetsBinaryRecord, PetsParameters, PetsRecord};
+use crate::parameters::*;
 use feos_core::joback::JobackRecord;
-use feos_core::parameter::{Identifier, IdentifierOption, Parameter, ParameterError, PureRecord};
+use feos_core::parameter::*;
 use feos_core::python::joback::PyJobackRecord;
-use feos_core::python::parameter::PyIdentifier;
-use feos_core::*;
+use feos_core::python::parameter::*;
+use feos_core::{impl_json_handling, impl_parameter, impl_pure_record};
 use ndarray::Array2;
-
 use numpy::{PyArray2, ToPyArray};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -63,17 +62,13 @@ impl PyPetsRecord {
     fn get_thermal_conductivity(&self) -> Option<[f64; 4]> {
         self.0.thermal_conductivity
     }
-}
 
-#[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for PyPetsRecord {
     fn __repr__(&self) -> PyResult<String> {
         Ok(self.0.to_string())
     }
 }
 
 impl_json_handling!(PyPetsRecord);
-
 impl_pure_record!(PetsRecord, PyPetsRecord, JobackRecord, PyJobackRecord);
 
 /// Create a set of PeTS parameters from records.
@@ -96,8 +91,6 @@ impl_pure_record!(PetsRecord, PyPetsRecord, JobackRecord, PyJobackRecord);
 )]
 #[derive(Clone)]
 pub struct PyPetsParameters(pub Rc<PetsParameters>);
-
-impl_parameter!(PetsParameters, PyPetsParameters);
 
 #[pymethods]
 impl PyPetsParameters {
@@ -215,7 +208,7 @@ impl PyPetsParameters {
         text_signature = "(sigma, epsilon_k, molarweight=None, viscosity=None, diffusion=None, thermal_conductivity=None)"
     )]
     #[staticmethod]
-    fn from_lists_pure(
+    fn from_values(
         sigma: f64,
         epsilon_k: f64,
         molarweight: Option<f64>,
@@ -223,7 +216,7 @@ impl PyPetsParameters {
         diffusion: Option<[f64; 5]>,
         thermal_conductivity: Option<[f64; 4]>,
     ) -> Self {
-        let pure_records = vec![PureRecord::new(
+        let pure_record = PureRecord::new(
             Identifier::new(format!("{}", 1).as_str(), None, None, None, None, None),
             molarweight.map_or(1.0, |v| v),
             PetsRecord::new(
@@ -234,11 +227,8 @@ impl PyPetsParameters {
                 thermal_conductivity.map_or(None, |v| Some(v)),
             ),
             None,
-        )];
-
-        let binary = Array2::from_shape_fn((1, 1), |(_, _)| PetsBinaryRecord::from(0.0));
-
-        Self(Rc::new(PetsParameters::from_records(pure_records, binary)))
+        );
+        Self(Rc::new(PetsParameters::new_pure(pure_record)))
     }
 
     #[getter]
@@ -258,11 +248,10 @@ impl PyPetsParameters {
     fn _repr_markdown_(&self) -> String {
         self.0.to_markdown()
     }
-}
 
-#[pyproto]
-impl pyo3::class::basic::PyObjectProtocol for PyPetsParameters {
     fn __repr__(&self) -> PyResult<String> {
         Ok(self.0.to_string())
     }
 }
+
+impl_parameter!(PetsParameters, PyPetsParameters);

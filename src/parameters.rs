@@ -249,7 +249,7 @@ pub mod utils {
                 },
                 "model_record": {
                     "sigma": 3.4050,
-                    "epsilon_k": 119.8
+                    "epsilon_k": 119.8,
                     "viscosity": [0.0, 0.0, 0.0, 0.0],
                     "thermal_conductivity": [0.0, 0.0, 0.0, 0.0],
                     "diffusion": [0.0, 0.0, 0.0, 0.0, 0.0]
@@ -318,7 +318,6 @@ pub mod utils {
                     "viscosity": [0.0, 0.0, 0.0, 0.0],
                     "thermal_conductivity": [0.0, 0.0, 0.0, 0.0],
                     "diffusion": [0.0, 0.0, 0.0, 0.0, 0.0]
-                },
                 },
                 "molarweight": 83.798
             }
