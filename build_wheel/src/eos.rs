@@ -48,7 +48,7 @@ impl_state_entropy_scaling!(Pets, PyPets);
 impl_vle_state!(Pets, PyPets);
 
 #[pymodule]
-pub fn _eos(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+pub fn eos(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPets>()?;
     m.add_class::<PyState>()?;
     m.add_class::<PyPhaseDiagramPure>()?;

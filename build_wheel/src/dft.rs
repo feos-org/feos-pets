@@ -76,7 +76,7 @@ impl_pair_correlation!(PetsFunctional);
 impl_solvation_profile!(PetsFunctional);
 
 #[pymodule]
-pub fn _dft(py: Python<'_>, m: &PyModule) -> PyResult<()> {
+pub fn dft(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPetsFunctional>()?;
     m.add_class::<PyState>()?;
     m.add_class::<PyPhaseDiagramPure>()?;
