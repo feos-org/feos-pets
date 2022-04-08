@@ -28,15 +28,15 @@ pub struct PetsFunctional {
 
 impl PetsFunctional {
     pub fn new(parameters: Rc<PetsParameters>) -> DFT<Self> {
-        Self::new_with_options(parameters, FMTVersion::WhiteBear, PetsOptions::default())
+        Self::with_options(parameters, FMTVersion::WhiteBear, PetsOptions::default())
     }
 
     #[allow(non_snake_case)]
     pub fn new_full(parameters: Rc<PetsParameters>, fmt_Version: FMTVersion) -> DFT<Self> {
-        Self::new_with_options(parameters, fmt_Version, PetsOptions::default())
+        Self::with_options(parameters, fmt_Version, PetsOptions::default())
     }
 
-    fn new_with_options(
+    pub fn with_options(
         parameters: Rc<PetsParameters>,
         fmt_version: FMTVersion,
         pets_options: PetsOptions,
@@ -85,7 +85,7 @@ impl PetsFunctional {
 
 impl HelmholtzEnergyFunctional for PetsFunctional {
     fn subset(&self, component_list: &[usize]) -> DFT<Self> {
-        Self::new_with_options(
+        Self::with_options(
             Rc::new(self.parameters.subset(component_list)),
             self.fmt_version,
             self.options,

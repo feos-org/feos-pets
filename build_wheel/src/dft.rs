@@ -53,10 +53,7 @@ impl PyPetsFunctional {
     #[staticmethod]
     #[pyo3(text_signature = "(parameters, fmt_version)")]
     fn new_full(parameters: PyPetsParameters, fmt_version: FMTVersion) -> Self {
-        Self(Rc::new(PetsFunctional::new_full(
-            parameters.0,
-            fmt_version,
-        )))
+        Self(Rc::new(PetsFunctional::new_full(parameters.0, fmt_version)))
     }
 }
 
@@ -64,7 +61,7 @@ impl_equation_of_state!(PyPetsFunctional);
 
 impl_state!(DFT<PetsFunctional>, PyPetsFunctional);
 impl_state_molarweight!(DFT<PetsFunctional>, PyPetsFunctional);
-impl_vle_state!(DFT<PetsFunctional>, PyPetsFunctional);
+impl_phase_equilibrium!(DFT<PetsFunctional>, PyPetsFunctional);
 
 impl_planar_interface!(PetsFunctional);
 impl_surface_tension_diagram!(PetsFunctional);
@@ -79,9 +76,7 @@ impl_solvation_profile!(PetsFunctional);
 pub fn dft(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPetsFunctional>()?;
     m.add_class::<PyState>()?;
-    m.add_class::<PyPhaseDiagramPure>()?;
-    m.add_class::<PyPhaseDiagramBinary>()?;
-    m.add_class::<PyPhaseDiagramHetero>()?;
+    m.add_class::<PyPhaseDiagram>()?;
     m.add_class::<PyPhaseEquilibrium>()?;
     m.add_class::<PyPlanarInterface>()?;
     m.add_class::<Geometry>()?;
