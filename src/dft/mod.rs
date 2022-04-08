@@ -7,7 +7,7 @@ use feos_core::{IdealGasContribution, MolarWeight};
 use feos_dft::adsorption::FluidParameters;
 use feos_dft::fundamental_measure_theory::{FMTContribution, FMTProperties, FMTVersion};
 use feos_dft::solvation::PairPotential;
-use feos_dft::{FunctionalContribution, HelmholtzEnergyFunctional, DFT};
+use feos_dft::{FunctionalContribution, HelmholtzEnergyFunctional, DFT, MoleculeShape};
 use ndarray::{Array, Array1, Array2};
 use num_dual::DualNum;
 use pure_pets_functional::*;
@@ -71,15 +71,14 @@ impl PetsFunctional {
             None => Joback::default(parameters.sigma.len()),
         };
 
-        let func = Self {
+        Self {
             parameters: parameters.clone(),
             fmt_version,
             options: pets_options,
             contributions,
             joback,
-        };
-
-        DFT::new_homosegmented(func, &Array1::<f64>::ones(parameters.sigma.len()))
+        }
+        .into()
     }
 }
 
@@ -90,6 +89,10 @@ impl HelmholtzEnergyFunctional for PetsFunctional {
             self.fmt_version,
             self.options,
         )
+    }
+
+    fn molecule_shape(&self) -> MoleculeShape {
+        MoleculeShape::Spherical(self.parameters.sigma.len())
     }
 
     fn compute_max_density(&self, moles: &Array1<f64>) -> f64 {
