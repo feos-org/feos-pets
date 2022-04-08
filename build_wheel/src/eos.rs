@@ -45,15 +45,13 @@ impl_virial_coefficients!(PyPets);
 impl_state!(Pets, PyPets);
 impl_state_molarweight!(Pets, PyPets);
 impl_state_entropy_scaling!(Pets, PyPets);
-impl_vle_state!(Pets, PyPets);
+impl_phase_equilibrium!(Pets, PyPets);
 
 #[pymodule]
 pub fn eos(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPets>()?;
     m.add_class::<PyState>()?;
-    m.add_class::<PyPhaseDiagramPure>()?;
-    m.add_class::<PyPhaseDiagramBinary>()?;
-    m.add_class::<PyPhaseDiagramHetero>()?;
+    m.add_class::<PyPhaseDiagram>()?;
     m.add_class::<PyPhaseEquilibrium>()?;
     Ok(())
 }
