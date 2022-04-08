@@ -137,10 +137,6 @@ impl FluidParameters for PetsFunctional {
     fn sigma_ff(&self) -> &Array1<f64> {
         &self.parameters.sigma
     }
-
-    fn m(&self) -> Array1<f64> {
-        Array1::<f64>::ones(self.parameters.sigma.len())
-    }
 }
 
 impl PairPotential for PetsFunctional {
