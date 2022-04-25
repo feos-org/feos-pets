@@ -86,19 +86,6 @@ mod tests {
     use ndarray::arr1;
 
     #[test]
-    fn helmholtz_energy() {
-        let disp = Dispersion {
-            parameters: argon_parameters(),
-        };
-        let t = 250.0;
-        let v = 1000.0;
-        let n = 1.0;
-        let s = StateHD::new(t, v, arr1(&[n]));
-        let a_rust = disp.helmholtz_energy(&s);
-        assert_relative_eq!(a_rust, -1.0622531100351962, epsilon = 1e-10);
-    }
-
-    #[test]
     fn mix() {
         let c1 = Dispersion {
             parameters: argon_parameters(),
