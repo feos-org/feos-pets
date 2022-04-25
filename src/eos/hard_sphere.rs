@@ -69,19 +69,6 @@ mod tests {
     use ndarray::arr1;
 
     #[test]
-    fn helmholtz_energy() {
-        let hs = HardSphere {
-            parameters: argon_parameters(),
-        };
-        let t = 250.0;
-        let v = 1000.0;
-        let n = 1.0;
-        let s = StateHD::new(t, v, arr1(&[n]));
-        let a_rust = hs.helmholtz_energy(&s);
-        assert_relative_eq!(a_rust, 0.410610492598808, epsilon = 1e-10);
-    }
-
-    #[test]
     fn mix() {
         let c1 = HardSphere {
             parameters: argon_parameters(),

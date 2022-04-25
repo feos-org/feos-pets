@@ -325,7 +325,7 @@ mod tests {
     use approx::assert_relative_eq;
     use feos_core::{Contributions, DensityInitialization, PhaseEquilibrium, State};
     use ndarray::arr1;
-    use quantity::si::{BAR, KELVIN, METER, PASCAL, RGAS, SECOND};
+    use quantity::si::{BAR, KELVIN, METER, PASCAL, RGAS};
 
     #[test]
     fn ideal_gas_pressure() {
@@ -378,7 +378,7 @@ mod tests {
     fn vle_pure_t() {
         let e = Rc::new(Pets::new(argon_parameters()));
         let t = 300.0 * KELVIN;
-        let vle = PhaseEquilibrium::pure_t(&e, t, None, Default::default());
+        let vle = PhaseEquilibrium::pure(&e, t, None, Default::default());
         if let Ok(v) = vle {
             assert_relative_eq!(
                 v.vapor().pressure(Contributions::Total),
@@ -386,30 +386,6 @@ mod tests {
                 epsilon = 1e-6
             )
         }
-    }
-
-    #[test]
-    fn critical_point() {
-        let e = Rc::new(Pets::new(argon_parameters()));
-        let t = 300.0 * KELVIN;
-        let cp = State::critical_point(&e, None, Some(t), Default::default());
-        if let Ok(v) = cp {
-            assert_relative_eq!(v.temperature, 375.1244078318015 * KELVIN, epsilon = 1e-8)
-        }
-    }
-
-    #[test]
-    fn speed_of_sound() {
-        let e = Rc::new(Pets::new(argon_parameters()));
-        let t = 300.0 * KELVIN;
-        let p = BAR;
-        let m = arr1(&[1.0]) * MOL;
-        let s = State::new_npt(&e, t, p, &m, DensityInitialization::None).unwrap();
-        assert_relative_eq!(
-            s.speed_of_sound(),
-            245.00185709137546 * METER / SECOND,
-            epsilon = 1e-4
-        )
     }
 
     #[test]
@@ -436,49 +412,5 @@ mod tests {
             s2m.pressure(Contributions::Total),
             epsilon = 1e-12
         )
-    }
-
-    fn viscosity() -> EosResult<()> {
-        let e = Rc::new(Pets::new(argon_parameters()));
-        let t = 300.0 * KELVIN;
-        let p = BAR;
-        let n = arr1(&[1.0]) * MOL;
-        let s = State::new_npt(&e, t, p, &n, DensityInitialization::None).unwrap();
-        assert_relative_eq!(
-            s.viscosity()?,
-            0.00797 * MILLI * PASCAL * SECOND,
-            epsilon = 1e-5
-        );
-        assert_relative_eq!(
-            s.ln_viscosity_reduced()?,
-            (s.viscosity()? / e.viscosity_reference(s.temperature, s.volume, &s.moles)?)
-                .into_value()
-                .unwrap()
-                .ln(),
-            epsilon = 1e-15
-        );
-        Ok(())
-    }
-
-    fn diffusion() -> EosResult<()> {
-        let e = Rc::new(Pets::new(argon_parameters()));
-        let t = 300.0 * KELVIN;
-        let p = BAR;
-        let n = arr1(&[1.0]) * MOL;
-        let s = State::new_npt(&e, t, p, &n, DensityInitialization::None).unwrap();
-        assert_relative_eq!(
-            s.diffusion()?,
-            0.01505 * (CENTI * METER).powi(2) / SECOND,
-            epsilon = 1e-5
-        );
-        assert_relative_eq!(
-            s.ln_diffusion_reduced()?,
-            (s.diffusion()? / e.diffusion_reference(s.temperature, s.volume, &s.moles)?)
-                .into_value()
-                .unwrap()
-                .ln(),
-            epsilon = 1e-15
-        );
-        Ok(())
     }
 }
