@@ -8,7 +8,7 @@ description = "Implementation of PeTS equation of state and corresponding Helmho
 homepage = "https://github.com/feos-org"
 readme = "README.md"
 repository = "https://github.com/feos-org/feos-pets"
-keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria", "SAFT", "PeTS"]
+keywords = ["physics", "thermodynamics", "equations_of_state", "phase_equilibria"]
 categories = ["science"]
 exclude = ["/.github/*", "*.ipynb", "/examples/*"]
 
