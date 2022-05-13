@@ -158,3 +158,36 @@ impl PairPotential for PetsFunctional {
         })
     }
 }
+
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use crate::parameters::utils::{argon_krypton_parameters, argon_parameters};
+
+//     use approx::assert_relative_eq;
+//     use ndarray::Array;
+//     use std::error::Error;
+
+//     #[test]
+//     #[allow(non_snake_case)]
+//     fn test_pair_potential() -> Result<(), Box<dyn Error>> {
+//         let params_pure = argon_parameters();
+//         let params_binary = argon_krypton_parameters();
+//         let func_pure = Rc::new(PetsFunctional::new(params_pure));
+//         let func_binary = Rc::new(PetsFunctional::new(params_binary));
+
+//         let r = Array::linspace(2.5, 17.5, 151);
+
+//         println!("pure {}", func_pure.pair_potential(&r),);
+//         println!("binary {}", func_binary.pair_potential(&r),);
+
+//         // assert_relative_eq!(
+//         //     vle_pure.vapor().density,
+//         //     vapor_density,
+//         //     max_relative = 1e-13,
+//         // );
+
+//         panic!();
+//         Ok(())
+//     }
+// }
