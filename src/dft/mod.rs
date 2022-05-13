@@ -7,7 +7,7 @@ use feos_core::{IdealGasContribution, MolarWeight};
 use feos_dft::adsorption::FluidParameters;
 use feos_dft::fundamental_measure_theory::{FMTContribution, FMTProperties, FMTVersion};
 use feos_dft::solvation::PairPotential;
-use feos_dft::{FunctionalContribution, HelmholtzEnergyFunctional, DFT, MoleculeShape};
+use feos_dft::{FunctionalContribution, HelmholtzEnergyFunctional, MoleculeShape, DFT};
 use ndarray::{Array, Array1, Array2};
 use num_dual::DualNum;
 use pure_pets_functional::*;
@@ -142,9 +142,19 @@ impl FluidParameters for PetsFunctional {
 impl PairPotential for PetsFunctional {
     fn pair_potential(&self, r: &Array1<f64>) -> Array2<f64> {
         let sigma = &self.parameters.sigma;
+        let rc = 2.5 * sigma;
+        let u_rc = 4.0
+            * &self.parameters.epsilon_k
+            * ((sigma / &rc).mapv(|l| l.powi(12)) - (sigma / &rc).mapv(|l| l.powi(6)));
+
         Array::from_shape_fn((self.parameters.sigma.len(), r.len()), |(i, j)| {
-            4.0 * self.parameters.epsilon_k[i]
-                * ((sigma[i] / r[j]).powi(12) - (sigma[i] / r[j]).powi(6))
+            if r[j] > rc[i] {
+                0.0
+            } else {
+                4.0 * self.parameters.epsilon_k[i]
+                    * ((sigma[i] / r[j]).powi(12) - (sigma[i] / r[j]).powi(6))
+                    - u_rc[i]
+            }
         })
     }
 }
